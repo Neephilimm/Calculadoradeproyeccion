@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<title>Ahorro Â· Calculadora y Proyecciones</title>
+<style>
+:root{
+  --bg:#f4f7fb; --card:#fff; --text:#172033; --muted:#667085;
+  --primary:#2563eb; --primary2:#1d4ed8; --border:#e5e7eb;
+  --green:#059669; --red:#dc2626; --shadow:0 10px 30px rgba(15,23,42,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+header{background:#0f172a;color:white;padding:28px 18px}
+.header-inner{max-width:1100px;margin:auto}
+h1{margin:0 0 7px;font-size:clamp(1.6rem,4vw,2.2rem)}
+header p{margin:0;color:#cbd5e1}
+main{max-width:1100px;margin:22px auto;padding:0 14px 50px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px;box-shadow:var(--shadow)}
+.card.full{grid-column:1/-1}
+h2{font-size:1.15rem;margin:0 0 16px}
+h3{font-size:1rem;margin:0 0 12px}
+label{display:block;font-size:.86rem;font-weight:650;margin:12px 0 6px}
+input,select{width:100%;padding:11px 12px;border:1px solid #d7dce5;border-radius:10px;font-size:1rem;background:white;color:var(--text)}
+.row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+button{border:0;border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer;background:var(--primary);color:#fff}
+button:hover{background:var(--primary2)}
+.result{margin-top:16px;padding:16px;border-radius:12px;background:#eff6ff;border:1px solid #bfdbfe}
+.big{font-size:1.7rem;font-weight:800}
+.muted{color:var(--muted);font-size:.88rem}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.mini{padding:15px;border:1px solid var(--border);border-radius:13px;background:#fafafa}
+.mini strong{display:block;font-size:1.25rem;margin-top:4px}
+.toggle{display:flex;align-items:center;gap:10px;margin:12px 0}
+.toggle input{width:auto}
+.scenarios{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.scenario{border:1px solid var(--border);border-radius:14px;padding:15px}
+.scenario h3{margin-bottom:5px}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{text-align:right;padding:11px 8px;border-bottom:1px solid var(--border)}
+th:first-child,td:first-child{text-align:left}
+th{font-size:.78rem;text-transform:uppercase;color:var(--muted)}
+.positive{color:var(--green)} .negative{color:var(--red)}
+.note{background:#fff7ed;border:1px solid #fed7aa;padding:12px;border-radius:10px;font-size:.88rem}
+.footer{color:var(--muted);text-align:center;margin-top:20px;font-size:.8rem}
+@media(max-width:760px){
+ .grid,.scenarios{grid-template-columns:1fr}
+ .card.full{grid-column:auto}
+ .cards,.row3{grid-template-columns:1fr}
+ .row{grid-template-columns:1fr}
+ table{font-size:.82rem}
+ th,td{padding:9px 5px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <h1>ðŸ’° Mi ahorro</h1>
+    <p>Calculadora de descuentos, gastos y proyecciones mensuales.</p>
+  </div>
+</header>
+
+<main>
+<div class="grid">
+
+<section class="card">
+<h2>Calculadora de descuento</h2>
+<div class="row">
+  <div><label>Monto</label><input id="discountAmount" type="number" value="19000" min="0"></div>
+  <div><label>Descuento (%)</label><input id="discountPercent" type="number" value="20" min="0" max="100" step="0.01"></div>
+</div>
+<div class="result">
+  <div class="muted">Precio final</div>
+  <div class="big" id="discountResult">$15.200</div>
+  <div class="muted" id="discountSaved">Ahorras $3.800</div>
+</div>
+</section>
+
+<section class="card">
+<h2>ConfiguraciÃ³n de ahorro</h2>
+<div class="row">
+  <div><label>Ahorro mensual / sueldo</label><input id="monthlyIncome" type="number" value="180000" min="0"></div>
+  <div><label>Saldo actual</label><input id="currentBalance" type="number" value="1039114" min="0"></div>
+</div>
+<div class="row">
+  <div><label>Transferencia pendiente</label><input id="pendingTransfer" type="number" value="17576" min="0"></div>
+  <div><label>Tipo de cambio USD â†’ CLP</label><input id="usdRate" type="number" value="965.71" min="0" step="0.01"></div>
+</div>
+<div class="toggle">
+  <input id="includeUsd" type="checkbox">
+  <label for="includeUsd" style="margin:0">Incluir ingreso opcional de US$10</label>
+</div>
+<div class="row">
+  <div><label>Ingreso opcional (USD)</label><input id="usdAmount" type="number" value="10" min="0" step="0.01"></div>
+  <div><label>Descuento sobre ese ingreso</label><input id="usdDeduction" type="number" value="800" min="0"></div>
+</div>
+</section>
+
+<section class="card full">
+<h2>Gastos programados</h2>
+<p class="muted">Marca los gastos que quieres aplicar a cada mes. Puedes cambiar cualquier valor.</p>
+<div class="row3">
+  <div><label>Septiembre Â· pasajes</label><input class="expense" data-month="sep" value="17576" type="number" min="0"></div>
+  <div><label>Septiembre Â· regalo</label><input class="expense" data-month="sep" value="10000" type="number" min="0"></div>
+  <div><label>Septiembre Â· otros</label><input class="expense" data-month="sep" value="0" type="number" min="0"></div>
+
+  <div><label>Octubre Â· corte</label><input class="expense" data-month="oct" value="10000" type="number" min="0"></div>
+  <div><label>Noviembre Â· gastos</label><input class="expense" data-month="nov" value="0" type="number" min="0"></div>
+  <div><label>Diciembre Â· regalos/pasajes</label><input class="expense" data-month="dec" value="40000" type="number" min="0"></div>
+
+  <div><label>Diciembre Â· corte</label><input class="expense" data-month="dec" value="10000" type="number" min="0"></div>
+  <div><label>Enero Â· gastos</label><input class="expense" data-month="jan" value="0" type="number" min="0"></div>
+  <div><label>Febrero Â· corte</label><input class="expense" data-month="feb" value="10000" type="number" min="0"></div>
+</div>
+</section>
+
+<section class="card full">
+<h2>ProyecciÃ³n hasta febrero</h2>
+<div class="cards">
+  <div class="mini"><span class="muted">Saldo inicial + transferencia</span><strong id="starting">â€”</strong></div>
+  <div class="mini"><span class="muted">Ingreso opcional</span><strong id="optionalIncome">â€”</strong></div>
+  <div class="mini"><span class="muted">Saldo final febrero</span><strong id="finalBalance">â€”</strong></div>
+</div>
+<br>
+<div class="scenarios">
+  <div class="scenario">
+    <h3>Escenario 1 Â· sin US$10</h3>
+    <div id="table1"></div>
+  </div>
+  <div class="scenario">
+    <h3>Escenario 2 Â· con US$10</h3>
+    <div id="table2"></div>
+  </div>
+</div>
+</section>
+
+<section class="card full">
+<h2>Â¿QuÃ© pasa despuÃ©s de febrero?</h2>
+<p class="muted">Por defecto, el sueldo estÃ¡ garantizado solo hasta febrero. Puedes activar la continuidad cuando sepas que seguirÃ¡s recibiÃ©ndolo.</p>
+<div class="toggle">
+  <input id="continueAfterFeb" type="checkbox">
+  <label for="continueAfterFeb" style="margin:0">Continuar proyectando el sueldo despuÃ©s de febrero</label>
+</div>
+<div id="futureBox" style="display:none">
+  <div class="row">
+    <div><label>Meses adicionales</label><input id="extraMonths" type="number" value="6" min="1" max="60"></div>
+    <div><label>Ingreso mensual futuro</label><input id="futureIncome" type="number" value="180000" min="0"></div>
+  </div>
+  <div class="result" id="futureResult"></div>
+</div>
+</section>
+
+<section class="card full">
+<h2>Resumen de la proyecciÃ³n</h2>
+<div class="note" id="summary">â€”</div>
+</section>
+
+</div>
+<div class="footer">Los cÃ¡lculos se realizan localmente en tu navegador. Puedes guardar este archivo como index.html y publicarlo en GitHub Pages.</div>
+</main>
+
+<script>
+const money = n => new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(Math.round(n));
+const val = id => Number(document.getElementById(id).value) || 0;
+
+function discount(){
+  const amount=val('discountAmount'), pct=val('discountPercent');
+  const saved=amount*pct/100;
+  document.getElementById('discountResult').textContent=money(amount-saved);
+  document.getElementById('discountSaved').textContent=`Ahorras ${money(saved)}`;
+}
+
+const months=[
+  ['sep','25 septiembre'],['oct','25 octubre'],['nov','25 noviembre'],
+  ['dec','25 diciembre'],['jan','25 enero'],['feb','25 febrero']
+];
+
+function expenses(){
+  const e={sep:[],oct:[],nov:[],dec:[],jan:[],feb:[]};
+  document.querySelectorAll('.expense').forEach(x=>{
+    const amount=Number(x.value)||0;
+    if(amount>0) e[x.dataset.month].push({
+      name:x.parentElement.querySelector('label').textContent.split(' Â· ')[1] || 'Gasto',
+      amount
+    });
+  });
+  return e;
+}
+
+function makeTable(start){
+  const e=expenses(), income=val('monthlyIncome');
+  let balance=start, rows='';
+  months.forEach(([key,label],i)=>{
+    const monthExpenses=e[key];
+    const total=monthExpenses.reduce((sum,g)=>sum+g.amount,0);
+    const expenseText=monthExpenses.length
+      ? monthExpenses.map(g=>`${g.name}: ${money(g.amount)}`).join('<br>')
+      : 'Sin gastos registrados';
+
+    if(i>0) balance += income;
+    balance -= total;
+
+    const incomeText=i===0 ? 'Saldo inicial + transferencia' : `+ Sueldo: ${money(income)}`;
+    rows += `<tr>
+      <td><b>${label}</b><br><span class="muted">${incomeText}</span></td>
+      <td>${expenseText}<br><strong>Total: ${money(total)}</strong></td>
+      <td><b>${money(balance)}</b></td>
+    </tr>`;
+  });
+  return {
+    html:`<table><thead><tr><th>Mes / ingreso</th><th>Gastos detallados</th><th>Saldo final</th></tr></thead><tbody>${rows}</tbody></table>`,
+    final:balance
+  };
+}
+
+function project(){
+  const base=val('currentBalance')+val('pendingTransfer');
+  const optional=Math.max(0,val('usdAmount')*val('usdRate')-val('usdDeduction'));
+  const t1=makeTable(base);
+  const t2=makeTable(base+optional);
+
+  document.getElementById('starting').textContent=money(base);
+  document.getElementById('optionalIncome').textContent=money(optional);
+  document.getElementById('table1').innerHTML=t1.html;
+  document.getElementById('table2').innerHTML=t2.html;
+  document.getElementById('finalBalance').textContent=money(document.getElementById('includeUsd').checked?t2.final:t1.final);
+
+  const diff=t2.final-t1.final;
+  document.getElementById('summary').innerHTML=
+    `Con los valores actuales, llegarÃ­as al <b>25 de febrero</b> con <b>${money(t1.final)}</b> sin considerar los US$10 opcionales.
+    Si finalmente recibes esos US$10 (menos $800), el escenario serÃ­a de <b>${money(t2.final)}</b>.
+    La diferencia entre ambos escenarios es de <b>${money(diff)}</b>.`;
+  future();
+}
+
+function future(){
+  const box=document.getElementById('futureBox');
+  if(!document.getElementById('continueAfterFeb').checked){box.style.display='none';return}
+  box.style.display='block';
+  const base=val('currentBalance')+val('pendingTransfer');
+  const optional=Math.max(0,val('usdAmount')*val('usdRate')-val('usdDeduction'));
+  const start=(document.getElementById('includeUsd').checked?base+optional:base);
+  const feb=makeTable(start).final;
+  const total=feb+val('extraMonths')*val('futureIncome');
+  document.getElementById('futureResult').innerHTML=
+    `DespuÃ©s de ${val('extraMonths')} meses adicionales, con ${money(val('futureIncome'))} mensuales, la proyecciÃ³n serÃ­a <b>${money(total)}</b>.`;
+}
+
+document.querySelectorAll('input').forEach(i=>i.addEventListener('input',()=>{discount();project()}));
+document.getElementById('continueAfterFeb').addEventListener('change',project);
+discount();project();
+</script>
+</body>
+</html>
